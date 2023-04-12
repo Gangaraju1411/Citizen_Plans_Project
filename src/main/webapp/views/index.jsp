@@ -60,7 +60,6 @@
 					<td><input type="submit" value="Search"
 						class=" btn btn-primary"></td>
 
-					<!--	<td><a href="/data" class="btn btn-primary">Search</a>  -->
 
 
 
@@ -127,7 +126,7 @@
 		</table>
 		<hr />
 
-		Export : <a href="">Excel</a> <a href="">Pdf</a>
+		Export : <a href="excel">Excel</a> <a href="pdf">Pdf</a>
 
 
 	</div>

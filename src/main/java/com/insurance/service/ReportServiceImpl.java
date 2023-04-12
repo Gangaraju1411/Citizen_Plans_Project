@@ -1,10 +1,12 @@
 package com.insurance.service;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import org.springframework.beans.BeanUtils;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.insurance.entity.Citizen;
 import com.insurance.repo.CitizenPlanRepository;
 import com.insurance.request.SearchRequest;
+import com.insurance.util.EmailSender;
 import com.insurance.util.ExcelGenerator;
 import com.insurance.util.PdfGenerator;
 
@@ -20,7 +23,16 @@ public class ReportServiceImpl implements ReportService {
 
 	@Autowired
 	private CitizenPlanRepository repo;
-	
+
+	@Autowired
+	private ExcelGenerator excelGenerator;
+
+	@Autowired
+	private PdfGenerator pdfGenerator;
+
+	@Autowired
+	private EmailSender emailUtils;
+
 	@Override
 	public List<String> getPlanNames() {
 		List<String> planNames = repo.getPlanNames();
@@ -34,7 +46,7 @@ public class ReportServiceImpl implements ReportService {
 	}
 
 	@Override
-	public List<Citizen> search(SearchRequest request)  {
+	public List<Citizen> search(SearchRequest request) {
 		Citizen entity = new Citizen();
 
 		if (null != request.getPlan_Name() && !"".equals(request.getPlan_Name())) {
@@ -66,25 +78,47 @@ public class ReportServiceImpl implements ReportService {
 			LocalDate localDate = LocalDate.parse(startDate, formatter);
 			entity.setPLAN_START_DATE(localDate);
 		}
-		return  repo.findAll(Example.of(entity));
+		return repo.findAll(Example.of(entity));
 
-		
-
-		
 	}
 
 	@Override
-	public boolean exportExcel() {
+	public boolean exportExcel(HttpServletResponse response) throws Exception {
 
-		List<Citizen> list = repo.findAll();
+		File f = new File("Plans.xls");
+		List<Citizen> plans = repo.findAll();
 
-		return false;
+		excelGenerator.generate(response, plans,f);
+
+		String subject = "Test mail subject";
+
+		String body = "<h1>Test mail body<h1/>";
+		String to = "venkatkilari5@gmail.com";
+		
+		emailUtils.sendEmail(subject, body, to,f);
+
+		f.delete();
+		return true;
+
 	}
 
 	@Override
-	public boolean exportPdf() {
+	public boolean exportPdf(HttpServletResponse response) throws Exception {
 
-		return false;
+		File f = new File("Plans.pdf");
+		
+		List<Citizen> plans = repo.findAll();
+		pdfGenerator.generate(response, plans,f);
+		String subject = "Test mail subject";
+
+		String body = "<h1>Test mail body<h1/>";
+		String to = "gattagangaraju@gmail.com";
+		
+		emailUtils.sendEmail(subject, body, to,f);
+
+		
+		return true;
+
 	}
 
 }
